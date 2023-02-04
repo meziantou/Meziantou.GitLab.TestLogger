@@ -1,0 +1,17 @@
+<RunSettings>
+  <!-- https://github.com/Microsoft/vstest-docs/blob/main/RFCs/0016-Loggers-Information-From-RunSettings.md -->
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console" enabled="False"></Logger>
+      <Logger friendlyName="gitlab">
+        <Configuration>
+          <verbosity>minimal</verbosity>
+          <collapseStackTraces>false</collapseStackTraces>
+          <collapseErrorMessages>false</collapseErrorMessages>
+          <collapseStandardOutput>true</collapseStandardOutput>
+          <collapseStandardError>true</collapseStandardError>
+      </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
+</RunSettings>

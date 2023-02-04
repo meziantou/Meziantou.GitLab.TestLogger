@@ -1,0 +1,31 @@
+name: publish
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - '*'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  create_nuget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: dotnet pack Meziantou.GitLab.TestLogger --configuration Release --output ${{ env.NuGetDirectory }} /bl
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: nuget
+          if-no-files-found: error
+          retention-days: 3
+          path: ${{ env.NuGetDirectory }}/**/*
