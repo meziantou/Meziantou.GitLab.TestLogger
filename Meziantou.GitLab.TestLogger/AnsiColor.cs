@@ -11,7 +11,7 @@ internal sealed class AnsiColor
         return $"\u001b[{_color}m";
     }
 
-    public static AnsiColor Off { get; } = new("0");
+    public static AnsiColor Default { get; } = new("0");
     public static AnsiColor Italic { get; } = new("3");
     public static AnsiColor Gray { get; } = new("1;30");
     public static AnsiColor Red { get; } = new("31");

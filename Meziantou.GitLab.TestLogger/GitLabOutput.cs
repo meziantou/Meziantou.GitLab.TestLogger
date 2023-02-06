@@ -15,7 +15,7 @@ internal static class GitLabOutput
         {
             OutputLevel.Warning => AnsiColor.Yellow,
             OutputLevel.Error => AnsiColor.RedBackground,
-            _ => AnsiColor.Off,
+            _ => AnsiColor.Default,
         };
     }
 
@@ -28,9 +28,9 @@ internal static class GitLabOutput
     {
         message = message.Replace("\r\n", "\n");
         if (NoColor)
-            color = AnsiColor.Off;
+            color = AnsiColor.Default;
 
-        return $"{color}{message}{AnsiColor.Off}";
+        return $"{color}{message}{AnsiColor.Default}";
     }
 
     public static void Write(string message, OutputLevel outputLevel)
@@ -54,13 +54,13 @@ internal static class GitLabOutput
     }
 
     // https://docs.gitlab.com/ee/ci/jobs/#custom-collapsible-sections
-    public static IDisposable BeginCollapsibleSection(string displayName, AnsiColor? color = null, bool collapsed = false)
+    public static IDisposable BeginCollapsibleSection(string displayName, AnsiColor? color, bool collapsed, string? suffixWhenCollapsed)
     {
         var name = "s" + Interlocked.Increment(ref s_sectionCount).ToString(CultureInfo.InvariantCulture);
 
         var time = (long)(DateTime.UtcNow - Epoch).TotalMilliseconds;
         var collapsedText = collapsed ? "[collapsed=true]" : "";
-        Console.WriteLine($"\u001b[0Ksection_start:{time.ToString(CultureInfo.InvariantCulture)}:{name}{collapsedText}\r\u001b[0K{color}{displayName}");
+        Console.WriteLine($"\u001b[0Ksection_start:{time.ToString(CultureInfo.InvariantCulture)}:{name}{collapsedText}\r\u001b[0K{color}{displayName}{(collapsed ? suffixWhenCollapsed : null)}");
         return new Section(name);
     }
 

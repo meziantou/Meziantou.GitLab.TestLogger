@@ -195,7 +195,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
             addAdditionalNewLine = true;
-            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.ErrorMessageBanner, AnsiColor.Red, collapsed: CollapseErrorMessages))
+            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.ErrorMessageBanner, AnsiColor.Red, collapsed: CollapseErrorMessages, ExpandText))
             {
                 var errorMessage = string.Format(CultureInfo.CurrentCulture, "{0}{1}{2}", TestResultPrefix, TestMessageFormattingPrefix, result.ErrorMessage);
                 GitLabOutput.WriteLine(errorMessage, AnsiColor.Red);
@@ -205,7 +205,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
         if (!string.IsNullOrEmpty(result.ErrorStackTrace))
         {
             addAdditionalNewLine = false;
-            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StackTraceBanner, AnsiColor.Red, collapsed: CollapseStackTraces))
+            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StackTraceBanner, AnsiColor.Red, collapsed: CollapseStackTraces, ExpandText))
             {
                 var stackTrace = string.Format(CultureInfo.CurrentCulture, "{0}{1}", TestResultPrefix, result.ErrorStackTrace);
                 GitLabOutput.WriteLine(stackTrace, AnsiColor.Red);
@@ -220,7 +220,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrWhiteSpace(stdOutMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdOutMessagesBanner, collapsed: CollapseStandardOutput))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdOutMessagesBanner, AnsiColor.Default, collapsed: CollapseStandardOutput, ExpandText))
                 {
                     GitLabOutput.WriteLine(stdOutMessages, OutputLevel.Information);
                 }
@@ -235,7 +235,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrEmpty(stdErrMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdErrMessagesBanner, AnsiColor.Red, collapsed: CollapseStandardError))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdErrMessagesBanner, AnsiColor.Red, collapsed: CollapseStandardError, ExpandText))
                 {
                     GitLabOutput.WriteLine(stdErrMessages, AnsiColor.Red);
                 }
@@ -250,7 +250,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrEmpty(dbgTrcMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.DbgTrcMessagesBanner, collapsed: CollapseDebugTraces))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.DbgTrcMessagesBanner, AnsiColor.Default, collapsed: CollapseDebugTraces, ExpandText))
                 {
                     GitLabOutput.WriteLine(dbgTrcMessages, OutputLevel.Information);
                 }
@@ -265,7 +265,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrEmpty(additionalInfoMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.AdditionalInfoMessagesBanner, collapsed: CollapseAdditionalInfoMessages))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.AdditionalInfoMessagesBanner, AnsiColor.Default, collapsed: CollapseAdditionalInfoMessages, ExpandText))
                 {
                     GitLabOutput.WriteLine(additionalInfoMessages, OutputLevel.Information);
                 }
@@ -393,7 +393,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
                     GitLabOutput.WriteLine(testDisplayName, OutputLevel.Information);
                     DisplayFullInformation(e.Result);
                     if (!string.IsNullOrEmpty(FailedTestSeparator))
-                        GitLabOutput.WriteLine(FailedTestSeparator, AnsiColor.Off);
+                        GitLabOutput.WriteLine(FailedTestSeparator, AnsiColor.Default);
 
                     break;
 
@@ -551,7 +551,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
                             total,
                             duration);
 
-                        var color = AnsiColor.Off;
+                        var color = AnsiColor.Default;
                         if (sourceOutcome == TestOutcome.Failed)
                         {
                             color = AnsiColor.Red;
