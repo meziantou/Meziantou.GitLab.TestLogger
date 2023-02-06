@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>annotations</Nullable>
     <LangVersion>11</LangVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +23,8 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Description>TestLogger for GitLab CI</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>Readme.md</PackageReadmeFile>    
-  </PropertyGroup>  
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="Readme.md" Pack="true" PackagePath="" />
     <None Include="Package/**/*.props" Pack="true" PackagePath="" />

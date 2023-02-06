@@ -29,6 +29,10 @@ Add a RunSettings file with the following content:
           <collapseErrorMessages>false</collapseErrorMessages>
           <collapseStandardOutput>true</collapseStandardOutput>
           <collapseStandardError>true</collapseStandardError>
+          <collapseDebugTraces>true</collapseDebugTraces>
+          <collapseAdditionalInfoMessages>true</collapseAdditionalInfoMessages>
+          <expandSectionText> (click to exanpand)</expandSectionText>
+          <smartOutput>false</smartOutput>
       </Configuration>
       </Logger>
     </Loggers>

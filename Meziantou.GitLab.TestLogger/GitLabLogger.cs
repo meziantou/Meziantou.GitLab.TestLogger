@@ -29,7 +29,11 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
     public const string CollapseErrorMessagesParam = "collapseErrorMessages";
     public const string CollapseStandardOutputParam = "collapseStandardOutput";
     public const string CollapseStandardErrorParam = "collapseStandardError";
+    public const string CollapseDebugTracesParam = "collapseDebugTraces";
+    public const string CollapseAdditionalInfoMessagesParam = "collapseAdditionalInfoMessages";
+    public const string SmartOutputParam = "smartOutput";
     public const string FailedTestSeparatorParam = "failedTestSeparator";
+    public const string ExpandTextParam = "expandSectionText";
     public const string ParentExecutionIdPropertyIdentifier = "ParentExecId";
     public const string ExecutionIdPropertyIdentifier = "ExecutionId";
 
@@ -60,7 +64,12 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
     public bool CollapseErrorMessages { get; private set; }
     public bool CollapseStandardOutput { get; private set; }
     public bool CollapseStandardError { get; private set; }
+    public bool CollapseDebugTraces { get; private set; }
+    public bool CollapseAdditionalInfoMessages { get; private set; }
+
+    public bool SmartOutput { get; private set; }
     public string FailedTestSeparator { get; private set; } = "\n \n ";
+    public string ExpandText { get; private set; } = " (click to expand the section)";
 
     /// <summary>
     /// Tracks leaf test outcomes per source. This is needed to correctly count hierarchical tests as well as
@@ -72,6 +81,8 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
     public void Initialize(TestLoggerEvents events, string testRunDirectory)
     {
         ValidateArg.NotNull(events, nameof(events));
+
+        Debugger.Launch();
 
         // Register for the events.
         events.TestRunMessage += TestMessageHandler;
@@ -105,8 +116,20 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
         if (parameters.TryGetValue(CollapseStandardErrorParam, out var collapseStandardErrorValue) && bool.TryParse(collapseStandardErrorValue, out var collapseStandardError))
             CollapseStandardError = collapseStandardError;
 
+        if (parameters.TryGetValue(CollapseDebugTracesParam, out var collapseDebugTracesValue) && bool.TryParse(collapseDebugTracesValue, out var collapseDebugTraces))
+            CollapseDebugTraces = collapseDebugTraces;
+
+        if (parameters.TryGetValue(CollapseAdditionalInfoMessagesParam, out var collapseAdditionalInfoMessagesValue) && bool.TryParse(collapseAdditionalInfoMessagesValue, out var collapseAdditionalInfoMessages))
+            CollapseAdditionalInfoMessages = collapseAdditionalInfoMessages;
+
+        if (parameters.TryGetValue(SmartOutputParam, out var smartOutputValue) && bool.TryParse(smartOutputValue, out var smartOutput))
+            SmartOutput = smartOutput;
+
         if (parameters.TryGetValue(FailedTestSeparatorParam, out var failedTestSeparator))
             FailedTestSeparator = failedTestSeparator;
+
+        if (parameters.TryGetValue(ExpandTextParam, out var expandText))
+            ExpandText = expandText;
 
         parameters.TryGetValue(DefaultLoggerParameterNames.TargetFramework, out _targetFramework);
         _targetFramework = !string.IsNullOrWhiteSpace(_targetFramework) ? NuGetFramework.Parse(_targetFramework).GetShortFolderName() : _targetFramework;
@@ -164,7 +187,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
         return requiredMessageCollection;
     }
 
-    private static void DisplayFullInformation(TestResult result)
+    private void DisplayFullInformation(TestResult result)
     {
         // Add newline if it is not in given output data.
         var addAdditionalNewLine = false;
@@ -172,7 +195,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
             addAdditionalNewLine = true;
-            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.ErrorMessageBanner, AnsiColor.Red))
+            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.ErrorMessageBanner, AnsiColor.Red, collapsed: CollapseErrorMessages))
             {
                 var errorMessage = string.Format(CultureInfo.CurrentCulture, "{0}{1}{2}", TestResultPrefix, TestMessageFormattingPrefix, result.ErrorMessage);
                 GitLabOutput.WriteLine(errorMessage, AnsiColor.Red);
@@ -182,7 +205,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
         if (!string.IsNullOrEmpty(result.ErrorStackTrace))
         {
             addAdditionalNewLine = false;
-            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StackTraceBanner, AnsiColor.Red))
+            using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StackTraceBanner, AnsiColor.Red, collapsed: CollapseStackTraces))
             {
                 var stackTrace = string.Format(CultureInfo.CurrentCulture, "{0}{1}", TestResultPrefix, result.ErrorStackTrace);
                 GitLabOutput.WriteLine(stackTrace, AnsiColor.Red);
@@ -197,7 +220,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrWhiteSpace(stdOutMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdOutMessagesBanner, collapsed: true))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdOutMessagesBanner, collapsed: CollapseStandardOutput))
                 {
                     GitLabOutput.WriteLine(stdOutMessages, OutputLevel.Information);
                 }
@@ -212,7 +235,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrEmpty(stdErrMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdErrMessagesBanner, AnsiColor.Red, collapsed: true))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.StdErrMessagesBanner, AnsiColor.Red, collapsed: CollapseStandardError))
                 {
                     GitLabOutput.WriteLine(stdErrMessages, AnsiColor.Red);
                 }
@@ -227,7 +250,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrEmpty(dbgTrcMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.DbgTrcMessagesBanner))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.DbgTrcMessagesBanner, collapsed: CollapseDebugTraces))
                 {
                     GitLabOutput.WriteLine(dbgTrcMessages, OutputLevel.Information);
                 }
@@ -242,7 +265,7 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
 
             if (!string.IsNullOrEmpty(additionalInfoMessages))
             {
-                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.AdditionalInfoMessagesBanner))
+                using (GitLabOutput.BeginCollapsibleSection(TestResultPrefix + CommandLineResources.AdditionalInfoMessagesBanner, collapsed: CollapseAdditionalInfoMessages))
                 {
                     GitLabOutput.WriteLine(additionalInfoMessages, OutputLevel.Information);
                 }
@@ -280,29 +303,36 @@ public sealed class GitLabLogger : ITestLoggerWithParameters
             switch (e.Level)
             {
                 case TestMessageLevel.Informational:
-                    {
-                        if (VerbosityLevel is Verbosity.Quiet or Verbosity.Minimal)
-                            break;
-
-                        GitLabOutput.WriteLine(e.Message, OutputLevel.Information);
+                    if (VerbosityLevel is Verbosity.Quiet or Verbosity.Minimal)
                         break;
-                    }
+
+                    GitLabOutput.WriteLine(e.Message, OutputLevel.Information);
+                    break;
 
                 case TestMessageLevel.Warning:
-                    {
-                        if (VerbosityLevel == Verbosity.Quiet)
-                            break;
-
-                        GitLabOutput.WriteLine(e.Message, OutputLevel.Warning);
+                    if (VerbosityLevel == Verbosity.Quiet)
                         break;
+
+                    if (SmartOutput)
+                    {
+                        // When --blame and there is no test hanging => everything's fine, show the message as information
+                        if (e.Message == "Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.")
+                        {
+                            GitLabOutput.WriteLine(e.Message, OutputLevel.Information);
+                        }
                     }
+                    else
+                    {
+                        GitLabOutput.WriteLine(e.Message, OutputLevel.Warning);
+                    }
+
+                    break;
 
                 case TestMessageLevel.Error:
-                    {
-                        _testRunHasErrorMessages = true;
-                        GitLabOutput.WriteLine(e.Message, OutputLevel.Error);
-                        break;
-                    }
+                    _testRunHasErrorMessages = true;
+                    GitLabOutput.WriteLine(e.Message, OutputLevel.Error);
+                    break;
+
                 default:
                     EqtTrace.Warning("ConsoleLogger.TestMessageHandler: The test message level is unrecognized: {0}", e.Level.ToString());
                     break;
