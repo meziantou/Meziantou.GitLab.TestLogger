@@ -58,7 +58,7 @@ internal static class GitLabOutput
     {
         var name = "s" + Interlocked.Increment(ref s_sectionCount).ToString(CultureInfo.InvariantCulture);
 
-        var time = (long)(DateTime.UtcNow - Epoch).TotalMilliseconds;
+        var time = (long)(DateTime.UtcNow - Epoch).TotalSeconds;
         var collapsedText = collapsed ? "[collapsed=true]" : "";
         Console.WriteLine($"\u001b[0Ksection_start:{time.ToString(CultureInfo.InvariantCulture)}:{name}{collapsedText}\r\u001b[0K{color}{displayName}{(collapsed ? suffixWhenCollapsed : null)}");
         return new Section(name);
@@ -72,7 +72,7 @@ internal static class GitLabOutput
 
         public void Dispose()
         {
-            var time = (long)(DateTime.UtcNow - Epoch).TotalMilliseconds;
+            var time = (long)(DateTime.UtcNow - Epoch).TotalSeconds;
             Console.WriteLine($"\u001b[0Ksection_end:{time.ToString(CultureInfo.InvariantCulture)}:{_name}\r\u001b[0K");
         }
     }
