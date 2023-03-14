@@ -5,6 +5,8 @@ Test logger for `dotnet test` / `vstest`. The output is similar to the [default 
 - Ansi color
 - Collapsible sections
 
+![](docs/screenshot.jpg)
+
 # How to use it:
 
 Add the NuGet package to your project:
